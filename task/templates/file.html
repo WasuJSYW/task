@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+    <title>资料列表</title>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div style="margin-bottom:10px">
+            <div style="float: right" class="col-lg-6">
+                <form method="get">
+                    <div class="input-group">
+                        <input type="text" name="NAME" class="form-control" placeholder="按资料名称搜索">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                            </button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div><!-- /.col-lg-6 -->
+            <ul class="nav nav-pills">
+                <li role="presentation" class="active">
+                    <a href="../file/add">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        添加资料
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                资料列表
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>项目阶段</th>
+                    <th>资料名称</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ file.get_project_schedule_display }} </td>
+                        <td>{{ file.file_name }}
+                            {% if file.key_file == 1 %}
+                                <span class='label label-info'>关键节点</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-primary btn-xs" href="../file/{{ file.id }}/edit/">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </a>
+                            <a class="btn btn-danger btn-xs" href="../file/{{ file.id }}/delete/">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+
+{% endblock %}

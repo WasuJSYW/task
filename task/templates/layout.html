@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="3600">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    {% block head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    {% block css %}{% endblock %}
+</head>
+<body style="padding-top: 60px">
+<nav class="navbar navbar-fixed-top navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/index">
+                <img alt="Brand" src="/static/images/wasu.jpg" width="25" height="25">
+
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/index">华数传媒技术运维部任务看板 <span class="sr-only">(current)</span></a></li>
+                <li><a href="/project">项目管理</a></li>
+                <li><a href="/inspect" style="">机房巡检</a></li>
+                <li><a class="admin" style="display: none" href="/user">用户管理</a></li>
+                <li><a href="/zhuanxiang">亚运专项</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li class="anonymous active" style="display: none"><a data-toggle="modal" data-target="#login">登录</a>
+                </li>
+                <li class="general admin ershida_block active dropdown" style="display: none">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">{{ request.session.info.name }}({{ request.session.info.level }})<span
+                            class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/user/{{ request.session.info.id }}/reset/">重置密码</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a onclick="LogoutEvent()">注销</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div>
+    {% block content %}{% endblock %}
+    <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class=" modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">登录</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="formLogin">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">用户名</label>
+                            <div class="col-sm-7">
+                                {{ loginform.user_name }}
+                                <span class="error-msg" style="color: red;"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword3" class="col-sm-3 control-label">密码</label>
+                            <div class="col-sm-7">
+                                {{ loginform.user_password }}
+                                <span class="error-msg" style="color: red;"></span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button class="btn btn-primary" onclick="bindBtnLoginEvent()">提 交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+{% block js %}{% endblock %}
+<script type="text/javascript">
+    $(function () {
+        initRole();
+    })
+
+    function initRole() {
+        if (sessionStorage.getItem('role') == "管理员") {
+            $(".admin").attr("style", "display:block")
+            $(".admin_table").attr("style", "width: 10%")
+        }
+        if (sessionStorage.getItem('role') == "普通用户") {
+            $(".general").attr("style", "display:block")
+        }
+        if (sessionStorage.getItem('role') == "日常") {
+            $(".ershida_none").attr("style", "display:none")
+            $(".ershida_block").attr("style", "display:block")
+        }
+        if (sessionStorage.getItem('role') == null) {
+            $(".anonymous").attr("style", "display:block")
+        }
+    }
+
+    function bindBtnLoginEvent() {
+        $(".error-msg").empty();
+        $.ajax({
+            url: '/account/',
+            type: "post",
+            data: $("#formLogin").serialize(),
+            dataType: "JSON",
+            success: function (res) {
+                if (res.status) {
+                    sessionStorage.setItem('role', res.role.level);
+                    $("#formLogin")[0].reset();
+                    $('#login').modal('hide');
+                    location.reload();
+                } else {
+                    $.each(res.error, function (name, errorList) {
+                        $("#id_" + name).next().text(errorList[0]);
+                    })
+                }
+            }
+        })
+    }
+
+    function LogoutEvent() {
+        $.ajax({
+            url: '/logout/',
+            type: "get",
+            dataType: "JSON",
+            success: function (res) {
+                if (res.status) {
+                    sessionStorage.clear();
+                    location.reload();
+                }
+            }
+        })
+    }
+</script>
+
+</body>
+</html>

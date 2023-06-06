@@ -1,0 +1,119 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+    <title>合同列表</title>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div style="margin-bottom:10px">
+            <div style="float: right" class="col-lg-6">
+                <form method="get">
+                    <div class="input-group">
+                        <input type="text" name="NAME" class="form-control" placeholder="按合同名称搜索">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                            </button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div><!-- /.col-lg-6 -->
+            <ul class="nav nav-pills">
+                <li role="presentation" class="active">
+                    <a href="/contract/{{ project_id }}/add/">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        添加合同
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                合同列表
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>合同名称</th>
+                    <th>合同编号</th>
+                    <th>已入库金额</th>
+                    <th>合同金额</th>
+                    <th>申购分项预算</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for contract in contracts %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ contract.contract_name }} </td>
+                        <td>{{ contract.contract_code }}</td>
+                        <td>{{ contract.warehouse_price }}</td>
+                        <td>{{ contract.contract_price }}</td>
+                        <td>{{ contract.apply_price }}</td>
+                        <td>
+                            <a class="btn btn-primary btn-xs" href="/contract/{{ contract.id }}/edit/">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </a>
+                            <a class="btn btn-danger btn-xs" onclick="bindBtnConfirmEvent({{ contract.id }})">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+
+    <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                <h4>确定是否删除？</h4>
+                <div style="text-align: right">
+                    <button type="button" class="btn btn-danger"
+                            onclick="bindBtnDeleteEvent()">确认
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        var CONTRACT_ID;
+
+        function bindBtnConfirmEvent(contract_id) {
+            $('#confirm').modal('show');
+            CONTRACT_ID = contract_id;
+        }
+
+        function bindBtnDeleteEvent() {
+            $.ajax({
+                url: "/contract/delete/",
+                type: "GET",
+                data: {
+                    contract_id: CONTRACT_ID,
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        location.reload();
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

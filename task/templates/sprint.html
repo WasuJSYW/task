@@ -1,0 +1,731 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block head %}
+    <title>二十大冲刺</title>
+{% endblock %}
+{% block content %}
+    <div style='text-align: center;'><h2>党的二十大安播重保期冲刺</h2></div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="col-lg-8">
+                    <div id="taskstacked" style="width: 100%;height:300px;"></div>
+                </div>
+                <div class="col-lg-4">
+                    <div id="taskdoughnut" style="width: 100%;height:300px;"></div>
+                </div>
+                <div class="col-lg-12" style="height: 30px;"></div>
+                <div class="col-lg-5">
+                    <div id="taskbar" style="width: 100%;height:300px;"></div>
+                </div>
+                <div class="col-lg-7">
+                    <div id="taskline" style="width: 100%;height:300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="admin" style="display: none">
+            <div style="margin-bottom:10px">
+                <div style="float: right" class="col-lg-6">
+                    <form method="get">
+                        <div class="input-group">
+                            <input type="text" name="NAME" class="form-control" placeholder="按任务名称搜索">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                            </button>
+                        </span>
+                        </div><!-- /input-group -->
+                    </form>
+                </div><!-- /.col-lg-6 -->
+                <a class="btn btn-primary" href="../task/add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    添加任务
+                </a>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                任务列表
+                <span class="label label-info">主任务总计{{ count.task_count }}项，子任务总计{{ count.subtask_count }}项，已完成子任务{{ count.task_complete_count }}项</span>
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                               aria-expanded="false">部门<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/index/?department=1">前端运维部</a></li>
+                                <li><a href="/index/?department=2">网络管理部</a></li>
+                                <li><a href="/index/?department=3">传输部</a></li>
+                                <li><a href="/index/?department=4">网管中心</a></li>
+                                <li><a href="/index/?department=5">安全播出部</a></li>
+                            </ul>
+                        </li>
+                    </th>
+                    <th>任务名称</th>
+                    <th style="width: 35%">任务目标</th>
+                    <th>负责人</th>
+                    <th>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                               aria-expanded="false">计划完成时间<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/index/?month=1">1月</a></li>
+                                <li><a href="/index/?month=2">2月</a></li>
+                                <li><a href="/index/?month=3">3月</a></li>
+                                <li><a href="/index/?month=4">4月</a></li>
+                                <li><a href="/index/?month=5">5月</a></li>
+                                <li><a href="/index/?month=6">6月</a></li>
+                                <li><a href="/index/?month=7">7月</a></li>
+                                <li><a href="/index/?month=8">8月</a></li>
+                                <li><a href="/index/?month=9">9月</a></li>
+                                <li><a href="/index/?month=10">10月</a></li>
+                                <li><a href="/index/?month=11">11月</a></li>
+                                <li><a href="/index/?month=12">12月</a></li>
+                            </ul>
+                        </li>
+                    </th>
+                    <th>任务进度</th>
+                    <th class="admin_table" style="display: none">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td style="width: 4%" data-toggle="collapse" data-target="#collapse{{ forloop.counter }}"
+                            aria-expanded="false"
+                            onclick="show_collapse('show_row{{ forloop.counter }}','#collapse{{ forloop.counter }}','{{ task.id }}','#subtable{{ forloop.counter }}')">
+                            <span class="caret"></span> {{ forloop.counter }}</td>
+                        <td style="width: 6%">{{ task.get_department_display }} </td>
+                        <td data-toggle="collapse" data-target="#collapse{{ forloop.counter }}"
+                            aria-expanded="false"
+                            onclick="show_collapse('show_row{{ forloop.counter }}','#collapse{{ forloop.counter }}','{{ task.id }}','#subtable{{ forloop.counter }}')">
+                            {% if task.subtask_count > 0 %}
+                                {{ task.task_name }}<span class="badge">{{ task.subtask_count }}</span>
+                            {% else %}
+                                {{ task.task_name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ task.task_target }} </td>
+                        <td style="width: 10%">{{ task.task_admin }} </td>
+                        <td>{{ task.task_endline| date:"Y-m-d H:i:s" }}</td>
+                        <td style="width: 15%">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                     aria-valuenow="{{ task.status }}" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: {{ task.status }}">
+                                    {{ task.status }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="admin_table" style="display: none">
+                            <button id="btnAdd{{ forloop.counter }}" type="button" class="btn btn-info btn-xs"
+                                    onclick="bindBtnAddEvent({{ task.id }})">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            </button>
+                            <a class="btn btn-primary btn-xs" href="../task/{{ task.id }}/edit/">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </a>
+                            <a class="btn btn-danger btn-xs" href="../task/{{ task.id }}/delete/">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr id="show_row{{ forloop.counter }}" style="display: none">
+                        <td colspan="8">
+                            <div class="collapse" id="collapse{{ forloop.counter }}">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <td>序号</td>
+                                        <td>子任务名称</td>
+                                        <td style="width: 35%">子任务目标</td>
+                                        <td>计划完成时间</td>
+                                        <td>完成情况</td>
+                                        <td class="admin" style="display: none">操作</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="subtable{{ forloop.counter }}">
+                                    <tr>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建子任务</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body">
+                        <form id="formAdd">
+                            {% for field in form %}
+                                <div class="col-xs-6">
+                                    <div class="form-group">
+                                        <label>{{ field.label }}</label> {{ field }}
+                                        <span class="error-msg" style="color: red"></span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button id="btnSave" type="button" class="btn btn-primary">提 交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            initTaskStacked();
+            initTaskDoughnut();
+            initTaskBar();
+            initTaskLine();
+        })
+
+        function initTaskLine() {
+            var myChart = echarts.init(document.getElementById('taskline'));
+
+            var option = {
+                title: {
+                    text: '子任务数量趋势',
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                grid: {
+                    top: '25%',
+                    left: '3%',
+                    right: '4%',
+                    bottom: '5%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    // prettier-ignore
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                },
+                yAxis: {
+                    type: 'value',
+                    axisPointer: {
+                        snap: true
+                    }
+                },
+                visualMap: {
+                    show: false,
+                    dimension: 0,
+                    pieces: [
+                        {
+                            lte: 3,
+                            color: "#91cc75"
+                        },
+                        {
+                            gt: 3,
+                            lte: 4,
+                            color: "#ee6666"
+                        },
+                        {
+                            gt: 4,
+                            lte: 6,
+                            color: "#91cc75"
+                        },
+                        {
+                            gt: 6,
+                            lte: 7,
+                            color: "#ee6666"
+                        },
+                        {
+                            gt: 7,
+                            color: "#91cc75"
+                        }
+                    ]
+                },
+                series: [
+                    {
+                        name: '子任务数量',
+                        type: 'line',
+                        // prettier-ignore
+                        data: [],
+                        markArea: {
+                            itemStyle: {
+                                color: 'rgba(255, 173, 177, 0.4)'
+                            },
+                            data: [
+                                [
+                                    {
+                                        name: '上半年高峰',
+                                        xAxis: '4月'
+                                    },
+                                    {
+                                        xAxis: '5月'
+                                    }
+                                ],
+                                [
+                                    {
+                                        name: '下半年高峰',
+                                        xAxis: '7月'
+                                    },
+                                    {
+                                        xAxis: '8月'
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/task/charts",
+                type: "get",
+                dataType: "JSON",
+                success: function (res) {
+                    option.series[0].data = res.data.subtask_count
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initTaskBar() {
+            var myChart = echarts.init(document.getElementById('taskbar'));
+
+            var option = {
+                title: {
+                    text: '子任务进度',
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        // Use axis to trigger tooltip
+                        type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
+                    }
+                },
+                legend: {
+                    top: 'bottom',
+                    left: 'center'
+                },
+                color: ["#91cc75", "#5470c6", "#ee6666", "#fac858"],
+                grid: {
+                    top: '15%',
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['前端运维部', '网络管理部', '传输部', '网管中心', '安全播出部']
+                },
+                series: [
+                    {
+                        name: '已完成',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: [320, 302, 301, 334, 390, 330, 320]
+                    },
+                    {
+                        name: '待完成',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: [120, 132, 101, 134, 90, 230, 210]
+                    },
+                    {
+                        name: '逾期',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: [220, 182, 191, 234, 290, 330, 310]
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/task/charts",
+                type: "get",
+                dataType: "JSON",
+                success: function (res) {
+                    $.each(res.data.subtask_schedule, function (i) {
+                        option.series[i].data = res.data.subtask_schedule[i]
+                    })
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initTaskDoughnut() {
+            var myChart = echarts.init(document.getElementById('taskdoughnut'));
+
+            var option = {
+                title: {
+                    text: '子任务统计',
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    top: 'bottom',
+                    left: 'center'
+                },
+                color: ["#91cc75", "#5470c6", "#ee6666", "#fac858"],
+                series: [
+                    {
+                        name: '子任务',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: true,
+                            position: 'inside',
+                            formatter: '{c}',
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '40',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            {value: '', name: '已完成'},
+                            {value: '', name: '待完成'},
+                            {value: '', name: '逾期'},
+                        ]
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/task/charts",
+                type: "get",
+                dataType: "JSON",
+                success: function (res) {
+                    $.each(res.data.subtask_list, function (i) {
+                        if (res.data.subtask_list[i] > 0) {
+                            option.series[0].data[i].value = res.data.subtask_list[i]
+                        }
+                    })
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initTaskStacked() {
+            var myChart = echarts.init(document.getElementById('taskstacked'));
+
+            var option = {
+                title: {
+                    text: '任务统计'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                legend: {
+                    data: ['前端运维部', '网络管理部', '传输部', '网管中心', '安全播出部']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value'
+                    }
+                ],
+                series: [
+                    {
+                        name: '前端运维部',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+                    {
+                        name: '网络管理部',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+                    {
+                        name: '传输部',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+                    {
+                        name: '网管中心',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+                    {
+                        name: '安全播出部',
+                        type: 'line',
+                        stack: 'Total',
+                        areaStyle: {},
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+                    {
+                        name: '总和',
+                        type: 'line',
+                        stack: 'sum',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top',
+                            }
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: []
+                    },
+
+                ]
+            };
+            $.ajax({
+                url: "/task/charts",
+                type: "get",
+                dataType: "JSON",
+                success: function (res) {
+                    $.each(res.data.data_list, function (i, item) {
+                        option.series[i].data = item.data_list
+                    })
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function show_collapse(rowid, collapseid, taskid, subtableid) {
+            var row = document.getElementById(rowid);
+            if (row.style.display == "none") {
+                row.style.display = "";
+            } else {
+                $(function () {
+                    $(collapseid).on('hidden.bs.collapse', function () {
+                        row.style.display = "none";
+                    })
+                });
+            }
+            $.ajax({
+                url: '/index/',
+                type: "post",
+                data: {
+                    nid: taskid
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    $(subtableid).empty();
+                    var $row = $("<tr></tr>");
+                    for (var $i = 0; $i < res.length; $i++) {
+                        var endline = new Date(res[$i].fields.subtask_endline).getTime();
+                        var date = new Date().getTime();
+                        var TimeDifference = endline - date;
+                        if (sessionStorage.getItem('role') == "管理员") {
+                            if (res[$i].fields.subtask_status == "已完成") {
+                                $row.append($("<td>" + "<label class='checkbox-inline' ><input type='checkbox' id='Checkbox" + res[$i].pk + "'  checked onclick='bindBtnUndoEvent(" + res[$i].pk + ")'>" + $i + "</label>" + "</td>"));
+                            } else {
+                                $row.append($("<td>" + "<label class='checkbox-inline' ><input type='checkbox' id='Checkbox" + res[$i].pk + "'  onclick='bindBtnDoneEvent(" + res[$i].pk + ")'>" + $i + "</label>" + "</td>"));
+                            }
+                        } else {
+                            if (res[$i].fields.subtask_status == "已完成") {
+                                $row.append($("<td>" + "<label class='checkbox-inline' ><input type='checkbox' style='display: none' id='Checkbox" + res[$i].pk + "'  checked onclick='bindBtnUndoEvent(" + res[$i].pk + ")'>" + $i + "</label>" + "</td>"));
+                            } else {
+                                $row.append($("<td>" + "<label class='checkbox-inline' ><input type='checkbox' style='display: none' id='Checkbox" + res[$i].pk + "'  onclick='bindBtnDoneEvent(" + res[$i].pk + ")'>" + $i + "</label>" + "</td>"));
+                            }
+                        }
+                        $row.append($("<td>" + res[$i].fields.subtask_name + "</td>"));
+                        $row.append($("<td>" + res[$i].fields.subtask_target + "</td>"));
+                        if (TimeDifference < 0 & res[$i].fields.subtask_status == "未完成") {
+                            $row.append($("<td>" + res[$i].fields.subtask_endline + "<span class='label label-danger'>已逾期</span> </td>"));
+                        } else {
+                            $row.append($("<td>" + res[$i].fields.subtask_endline + "</td>"));
+                        }
+                        $row.append($("<td id=SubtaskStatus" + res[$i].pk + ">" + res[$i].fields.subtask_status + "</td>"));
+                        if (sessionStorage.getItem('role') == "管理员") {
+                            $row.append($("<td class='admin'>" + "<input class='btn btn-danger btn-xs' type='button' value='删除' onclick='bindBtnDeleteEvent(" + res[$i].pk + ")'>" + "</td>"));
+                        }
+                        $(subtableid).append($row);
+                        var $row = $("<tr></tr>");
+                    }
+                }
+            })
+        }
+
+        function bindBtnAddEvent(taskid) {
+            $('#myModal').modal('toggle');
+            $("#btnSave").click(function () {
+                $(".error-msg").empty();
+                $.ajax({
+                    url: '/subtask/add/',
+                    type: "post",
+                    data: $("#formAdd").serialize() + '&' + $.param({'task_id': taskid}),
+                    dataType: "JSON",
+                    success: function (res) {
+                        console.log(res)
+                        if (res.status) {
+                            $('#myModal').modal('toggle');
+                            $("#formAdd")[0].reset();
+                            location.reload();
+                        } else {
+                            $.each(res.error, function (name, errorList) {
+                                $("#id_" + name).next().text(errorList[0]);
+                            })
+                        }
+                    }
+                })
+            });
+        }
+
+        function bindBtnDeleteEvent(subtask_id) {
+            $.ajax({
+                url: "/subtask/delete/",
+                type: "GET",
+                data: {
+                    uid: subtask_id
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        location.reload();
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+        function bindBtnDoneEvent(subtask_id) {
+            $.ajax({
+                url: "/subtask/done/",
+                type: "GET",
+                data: {
+                    uid: subtask_id
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        var SubtaskStatus = "SubtaskStatus" + subtask_id
+                        var Checkbox = "Checkbox" + subtask_id
+                        $("td[id=" + SubtaskStatus + "]").html("已完成");
+                        $("input[id=" + Checkbox + "]").removeAttr("onclick").attr("onclick", "bindBtnUndoEvent(" + subtask_id + ")")
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+        function bindBtnUndoEvent(subtask_id) {
+            $.ajax({
+                url: "/subtask/done/",
+                type: "POST",
+                data: {
+                    uid: subtask_id
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        var SubtaskStatus = "SubtaskStatus" + subtask_id
+                        var Checkbox = "Checkbox" + subtask_id
+                        $("td[id=" + SubtaskStatus + "]").html("未完成");
+                        $("input[id=" + Checkbox + "]").removeAttr("onclick").attr("onclick", "bindBtnDoneEvent(" + subtask_id + ")")
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

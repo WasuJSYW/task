@@ -1,0 +1,808 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block head %}
+    <title>项目管理</title>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="col-lg-3">
+                    <div id="gauge" style="width: 100%;height:350px;"></div>
+                </div>
+                <div class="col-lg-4">
+                    <div id="numberpies" style="width: 100%;height:350px;"></div>
+                </div>
+                <div class="col-lg-5">
+                    <div id="budget" style="width: 100%;height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <h3 class="panel-title" style='text-align: center;'>项目当前阶段进度表</h3>
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>项目名称</th>
+                    {% for schedule in schedule_list %}
+                        <th>{{ schedule }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for project,key_file_list in zip_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ project.project_name }}</td>
+                        {% for key_file in key_file_list %}
+                            <td>{{ key_file.file__file_name }}
+                                {% if  key_file.file_status == 'submitted' %}
+                                    <span class='label label-success'>已提交</span>
+                                {% elif  key_file.file_status == 'overtime' %}
+                                    <span class='label label-danger'>已逾期</span>
+                                {% elif  key_file.file_status == 'willovertime' %}
+                                    <span class='label label-warning'>将到期</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <h3 class="panel-title" style='text-align: center;'>项目资料临期逾期清单</h3>
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>项目名称</th>
+                    <th>资料名称</th>
+                    <th>计划提交时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for deadline in deadline_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ deadline.project_name }}</td>
+                        <td>{{ deadline.file_name }}</td>
+                        <td>{{ deadline.deadline }}
+                            {% if  deadline.file_status == 'overtime' %}
+                                <span class='label label-danger'>已逾期</span>
+                            {% elif  deadline.file_status == 'willovertime' %}
+                                <span class='label label-warning'>将到期</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="collapse" id="panel_gantt" style="display: none">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style='text-align: center;'>华数传媒技术运维部项目管理</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="gantt" style="width: 100%;height:300px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom:10px">
+            <div class="admin" style="display: none">
+                <div style="float: right" class="col-lg-6">
+                    <form method="get">
+                        <div class="input-group">
+                            <input type="text" name="NAME" class="form-control" placeholder="按项目名称搜索">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                            </button>
+                        </span>
+                        </div><!-- /input-group -->
+                    </form>
+                </div><!-- /.col-lg-6 -->
+                <ul class="nav nav-pills">
+                    <li role="presentation" class="active">
+                        <a href="../project/add">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            添加项目
+                        </a>
+                    </li>
+                    <li role="presentation"><a href="/file">资料管理</a></li>
+                    <li role="presentation"><a href="/project/?year=0">历年项目</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                项目列表
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>部门</th>
+                    <th>项目名称</th>
+                    <th>项目经理</th>
+                    <th class="admin" style="display: none">已发生额</th>
+                    <th style="width: 35%">项目进度</th>
+                    <th class="admin_table" style="display: none">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for project in projects %}
+                    <tr>
+                        <td data-toggle="collapse" data-target="#collapse{{ forloop.counter }}"
+                            aria-expanded="false"
+                            onclick="show_collapse('show_row{{ forloop.counter }}','#collapse{{ forloop.counter }}','{{ project.id }}','#subtable{{ forloop.counter }}')">
+                            <span class="caret"></span> {{ forloop.counter }}</td>
+                        <td style="width: 6%">{{ project.get_project_depart_display }} </td>
+                        <td data-toggle="collapse" data-target="#collapse{{ forloop.counter }}"
+                            aria-expanded="false"
+                            onclick="show_collapse('show_row{{ forloop.counter }}','#collapse{{ forloop.counter }}','{{ project.id }}','#subtable{{ forloop.counter }}')">{{ project.project_name }}
+                        </td>
+                        <td>{{ project.project_admin }} </td>
+                        <td class="admin" style="display: none"><a
+                                href="/assets/?id={{ project.id }}&page=1">
+                            {% if project.amount_used == None %}{{ "0" }}{% else %}
+                                {{ project.amount_used }}{% endif %}</a></td>
+                        <td style="width: 15%" onclick="initcharts({{ project.id }})">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-info progress-bar-striped active"
+                                     role="progressbar"
+                                     aria-valuenow="{{ project.project_status }}" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: {{ project.project_status }}">
+                                    {{ project.project_status }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="admin_table" style="display: none">
+                            <button id="btnAdd{{ forloop.counter }}" type="button" class="btn btn-info btn-xs"
+                                    onclick="bindBtnAddEvent({{ project.id }})">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            </button>
+                            <a class="btn btn-primary btn-xs" href="../project/{{ project.id }}/edit/">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </a>
+                            <a class="btn btn-danger btn-xs" onclick="bindBtnConfirmEvent({{ project.id }},1)">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr id="show_row{{ forloop.counter }}" style="display: none">
+                        <td colspan="8">
+                            <div class="collapse" id="collapse{{ forloop.counter }}">
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <td style="width: 5%">序号</td>
+                                        <td>资料状态</td>
+                                        <td>项目阶段</td>
+                                        <td>项目资料</td>
+                                        <td>计划提交时间</td>
+                                        <td>实际提交时间</td>
+                                        <td>备注</td>
+                                        <td class="admin_table" style="display: none">操作</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="subtable{{ forloop.counter }}">
+                                    <tr>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">资料选择</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>项目阶段</th>
+                                <th style="text-align: center">资料名称</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for schedule in schedule_list %}
+                                <tr>
+                                    <td style="width: 15%;vertical-align: middle">{{ schedule }}</td>
+                                    <td>
+                                        <form class="formAdd">
+                                            {% for field in form %}
+                                                {% if field.project_schedule ==  schedule %}
+                                                    <div class="col-xs-3">
+                                                        <div class="form-group">
+                                                            <div class="checkbox">
+                                                                <label>
+                                                                    <input name="check_box_list"
+                                                                           type="checkbox"
+                                                                           value="{{ field.id }}">{{ field.file_name }}
+                                                                    <span class="error-msg" style="color: red"></span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button id="btnSave" type="button" class="btn btn-primary">提 交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                <h4>确定是否删除？</h4>
+                <div style="text-align: right">
+                    <button type="button" class="btn btn-danger" onclick="bindBtnDeleteEvent()">确认</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+    <div class="modal fade" id="upload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">文件上传</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body">
+                        <form method="post" enctype="multipart/form-data" action="/project/upload/">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label id="file_name"></label>
+                                <input id="file_id" name="projectfile_id" type="text" style="display:none;">
+                                <input type="file" name="avatar">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                                <button type="submit" class="btn btn-primary">提 交</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'js/highcharts.js' %}"></script>
+    <script src="{% static 'js/xrange.js' %}"></script>
+    <script src="{% static 'js/oldie.js' %}"></script>
+    <script src="{% static 'js/exporting.js' %}"></script>
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script type="text/javascript">
+        var URL_ID;
+        var DELETE_ID;
+
+        $(function () {
+            initNumberPies();
+            initGauge();
+            initBudget();
+        })
+
+        function initNumberPies() {
+            var myChart = echarts.init(document.getElementById('numberpies'));
+
+            var option = {
+                title: {
+                    text: '项目数量统计',
+                    subtext: 'Number of project'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    top: 'bottom',
+                    data: [
+                        '前端运维部',
+                        '网络管理部',
+                        '传输部',
+                        '网管中心',
+                        '安全播出部',
+                        '技术运维部',
+                    ]
+                },
+                series: [
+                    {
+                        name: '完成情况',
+                        type: 'pie',
+                        selectedMode: 'single',
+                        radius: [0, '30%'],
+                        label: {
+                            position: 'inner',
+                            fontSize: 14
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            {value: '10', name: '已完成'},
+                            {value: '2', name: '未完成', selected: true},
+                        ]
+                    },
+                    {
+                        name: '各部门项目数量',
+                        type: 'pie',
+                        radius: ['45%', '60%'],
+                        label: {
+                            show: true,
+                            position: 'inside',
+                            formatter: '{c}',
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            {value: '2', name: '前端运维部'},
+                            {value: '1', name: '网络管理部'},
+                            {value: '1', name: '传输部'},
+                            {value: '2', name: '网管中心'},
+                            {value: '3', name: '安全播出部'},
+                            {value: '1', name: '技术运维部'},
+                        ]
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/project/charts/",
+                dataType: "JSON",
+                success: function (res) {
+                    $.each(res.data.complete_project_count, function (i) {
+                        option.series[0].data[i].value = res.data.complete_project_count[i]
+                    })
+                    $.each(res.data.depart_project_count, function (i) {
+                        option.series[1].data[i].value = res.data.depart_project_count[i]
+                    })
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initGauge() {
+            var myChart = echarts.init(document.getElementById('gauge'));
+
+            var option = {
+                title: {
+                    text: '总体完成率',
+                    subtext: 'completion rate'
+                },
+                tooltip: {
+                    formatter: '{a} <br/>{b} : {c}%'
+                },
+                series: [
+                    {
+                        name: '项目',
+                        type: 'gauge',
+                        progress: {
+                            show: true
+                        },
+                        detail: {
+                            valueAnimation: true,
+                            formatter: '{value}'
+                        },
+                        data: [
+                            {
+                                value: '',
+                                name: '完成率'
+                            }
+                        ]
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/project/charts/",
+                dataType: "JSON",
+                success: function (res) {
+                    $.each(res.data.completion_rate, function (i) {
+                        option.series[0].data[i].value = res.data.completion_rate[i]
+                    })
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initBudget() {
+            var myChart = echarts.init(document.getElementById('budget'));
+
+            var option = {
+                title: {
+                    text: '预算使用率',
+                    subtext: 'Budget utilization rate'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function (params) {
+                        var tar = params[1];
+                        return tar.name + '<br/>' + tar.seriesName + ' : ' + tar.value;
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    splitLine: {show: false},
+                    axisLabel: {
+                        interval: 0,
+                        formatter: function (params) {
+                            var newParamsName = "";
+                            var paramsNameNumber = params.length;
+                            var provideNumber = 4; // 一行显示几个字 然后就超过字数就会自动换行
+                            var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
+                            if (paramsNameNumber > provideNumber) {
+                                for (var p = 0; p < rowNumber; p++) {
+                                    var tempStr = "";
+                                    var start = p * provideNumber;
+                                    var end = start + provideNumber;
+                                    if (p == rowNumber - 1) {
+                                        tempStr = params.substring(start, paramsNameNumber);
+                                    } else {
+                                        tempStr = params.substring(start, end) + "\n";
+                                    }
+                                    newParamsName += tempStr;
+                                }
+                            } else {
+                                newParamsName = params;
+                            }
+                            return newParamsName;
+                        },
+                    },
+                    data: ['总预算', '已发生额', '前端运维部', '网络管理部', '传输部', '网管中心', '安全播出部', '技术运维部']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: 'Placeholder',
+                        type: 'bar',
+                        stack: 'Total',
+                        itemStyle: {
+                            borderColor: 'transparent',
+                            color: 'transparent'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                borderColor: 'transparent',
+                                color: 'transparent'
+                            }
+                        },
+                        data: [0, 1700, 1400, 1200, 300, 0]
+                    },
+                    {
+                        name: '金额',
+                        type: 'bar',
+                        stack: 'Total',
+                        label: {
+                            show: true,
+                            position: 'inside'
+                        },
+                        data: [2900, 1200, 300, 200, 900, 300]
+                    }
+                ]
+            };
+            $.ajax({
+                url: "/project/charts/",
+                dataType: "JSON",
+                success: function (res) {
+                    option.series[0].data = res.data.difference_budget
+                    option.series[1].data = res.data.budget_list
+                    myChart.setOption(option);
+                }
+            })
+        }
+
+        function initcharts(projectid) {
+            var panel_gantt = document.getElementById("panel_gantt");
+            if (panel_gantt.style.display = "none") {
+                panel_gantt.style.display = "";
+                $('#panel_gantt').collapse()
+            }
+
+            var options = {
+                chart: {
+                    type: 'xrange'
+                },
+                title: {
+                    text: '项目甘特图'
+                },
+                credits: {
+                    enabled: false,
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: {
+                        week: '%Y/%m/%d'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: ''
+                    },
+                    categories: ['需求分析', '项目立项', '项目实施', '项目初验', '项目终验'],
+                    reversed: true
+                },
+                tooltip: {
+                    dateTimeLabelFormats: {
+                        day: '%Y/%m/%d'
+                    }
+                },
+                series: [{
+                    name: '',
+                    // pointPadding: 0,
+                    // groupPadding: 0,
+                    borderColor: 'gray',
+                    colors: ['#5470c6', '#91cc75', '#fac858', '#ee6666',
+                        '#73c0de', '#3ba272', '#fc8452', '#9a60b4'],
+                    pointWidth: 20,
+                    data: [],
+                    dataLabels: {
+                        enabled: true
+                    }
+                }]
+            };
+
+            $.ajax({
+                url: "/project/charts",
+                type: "get",
+                data: {
+                    nid: projectid
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        options.series[0].name = res.data.series_name;
+                        options.series[0].data = res.data.data_list;
+                    }
+
+                    var charts = Highcharts.chart('gantt', options);
+                }
+            })
+        }
+
+        function show_collapse(rowid, collapseid, projectid, subtableid) {
+            var row = document.getElementById(rowid);
+            if (row.style.display == "none") {
+                row.style.display = "";
+            } else {
+                $(function () {
+                    $(collapseid).on('hidden.bs.collapse', function () {
+                        row.style.display = "none";
+                    })
+                });
+            }
+            $.ajax({
+                url: '/project/',
+                type: "post",
+                data: {
+                    nid: projectid
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    $(subtableid).empty();
+                    var $row = $("<tr></tr>");
+                    for (var $i = 0; $i < res.length; $i++) {
+                        var endline = new Date(res[$i].project_file__deadline).getTime();
+                        var submit = new Date(res[$i].project_file__submit_time).getTime();
+                        var date = new Date();
+                        date = date.setDate(date.getDate() - 1);
+                        date = new Date(date).getTime();
+                        var TimeDifference = endline - date;
+                        var DateDifference = endline - submit;
+                        if (sessionStorage.getItem('role') == "管理员") {
+                            if (res[$i].project_file__file_status == "已提交") {
+                                $row.append($("<td>" + "<label class='checkbox-inline'><input type='checkbox' id='Checkbox" + res[$i].project_file__id + "'  checked onclick='bindBtnUndoEvent(" + res[$i].project_file__id + ")'>" + $i + "</label>" + "</td>"));
+                            } else {
+                                $row.append($("<td>" + "<label class='checkbox-inline'><input type='checkbox' id='Checkbox" + res[$i].project_file__id + "'  onclick='bindBtnDoneEvent(" + res[$i].project_file__id + ")'>" + $i + "</label>" + "</td>"));
+                            }
+                        } else {
+                            if (res[$i].project_file__file_status == "已提交") {
+                                $row.append($("<td>" + "<label class='checkbox-inline'><input disabled type='checkbox' id='Checkbox" + res[$i].project_file__id + "'  checked onclick='bindBtnUndoEvent(" + res[$i].project_file__id + ")'>" + $i + "</label>" + "</td>"));
+                            } else {
+                                $row.append($("<td>" + "<label class='checkbox-inline'><input disabled type='checkbox' id='Checkbox" + res[$i].project_file__id + "'  onclick='bindBtnDoneEvent(" + res[$i].project_file__id + ")'>" + $i + "</label>" + "</td>"));
+                            }
+                        }
+                        $row.append($("<td id=ProjectFileStatus" + res[$i].project_file__id + ">" + res[$i].project_file__file_status + "</td>"));
+                        $row.append($("<td>" + res[$i].project_schedule + "</td>"));
+                        if (res[$i].key_file == 1) {
+                            $row.append($("<td>" + res[$i].file_name + "  <span class='label label-info'>关键节点</span> </td>"));
+                        } else {
+                            $row.append($("<td>" + res[$i].file_name + "</td>"));
+                        }
+
+                        if (TimeDifference < 0 & res[$i].project_file__file_status == "未提交") {
+                            $row.append($("<td>" + res[$i].project_file__deadline + "<span class='label label-danger'>已逾期</span> </td>"));
+                        } else if (parseInt(TimeDifference / (24 * 60 * 60 * 1000)) >= 0 & parseInt(TimeDifference / (24 * 60 * 60 * 1000)) < 8 & res[$i].project_file__file_status == "未提交") {
+                            $row.append($("<td>" + res[$i].project_file__deadline + "<span class='label label-warning'>将到期</span> </td>"));
+                        } else {
+                            $row.append($("<td>" + res[$i].project_file__deadline + "</td>"));
+                        }
+                        if (res[$i].project_file__submit_time) {
+                            if (DateDifference < 0) {
+                                $row.append($("<td>" + res[$i].project_file__submit_time + "<span class='label label-danger'>晚提交</span> </td>"));
+                            } else {
+                                $row.append($("<td>" + res[$i].project_file__submit_time + "</td>"));
+                            }
+                        } else {
+                            $row.append($("<td> </td>"));
+                        }
+                        if (res[$i].project_file__explain) {
+                            $row.append($("<td>" + res[$i].project_file__explain + "</td>"));
+                        } else {
+                            $row.append($("<td> </td>"));
+                        }
+                        if (sessionStorage.getItem('role') == "管理员") {
+                            $row.append($("<td style='width: 11%;'>" + "<a class='btn btn-primary btn-xs' href='../projectfile/" + res[$i].project_file__id + "/edit/'> <span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a>" + " " +
+                                "<a class='btn btn-danger btn-xs' type='button' onclick='bindBtnConfirmEvent(" + res[$i].project_file__id + ",0)'> <span class='glyphicon glyphicon-trash' aria-hidden='true'></span></a>" + " " +
+                                "<a class='btn btn-default btn-xs' type='button' onclick='bindBtnUploadEvent(" + res[$i].project_file__id + ",\"" + res[$i].file_name + "\")'> <span class='glyphicon glyphicon-open' aria-hidden='true'></span></a>" + " " +
+                                "<a class='btn btn-default btn-xs' type='button' href='/project/" + res[$i].project_file__id + "/download/''> <span class='glyphicon glyphicon-download-alt' aria-hidden='true'></span></a>" + "</td>"
+                            ));
+                        }
+                        $(subtableid).append($row);
+                        var $row = $("<tr></tr>");
+                    }
+                }
+            })
+        }
+
+        function bindBtnAddEvent(projectid) {
+            $('#myModal').modal('toggle');
+            $("#btnSave").click(function () {
+                $(".error-msg").empty();
+                $.ajax({
+                    url: '/projectfile/add/',
+                    type: "post",
+                    data: $(".formAdd").serialize() + '&' + $.param({'project_id': projectid}),
+                    dataType: "JSON",
+                    success: function () {
+                        $('#myModal').modal('toggle');
+                        $(".formAdd").each(function () {
+                            this.reset();
+                        });
+                        location.reload();
+                    }
+                })
+            });
+        }
+
+        function bindBtnConfirmEvent(delete_id, delete_url) {
+            $('#confirm').modal('show');
+            DELETE_ID = delete_id;
+            URL_ID = delete_url;
+        }
+
+        function bindBtnDeleteEvent() {
+            const DELETE_URL = {0: "/projectfile/delete/", 1: "/project/delete/"};
+            $.ajax({
+                url: DELETE_URL[URL_ID],
+                type: "GET",
+                data: {
+                    uid: DELETE_ID
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        location.reload();
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+        function bindBtnDoneEvent(projectfile_id) {
+            $.ajax({
+                url: "/projectfile/done/",
+                type: "GET",
+                data: {
+                    uid: projectfile_id
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        var ProjectFileStatus = "ProjectFileStatus" + projectfile_id
+                        var Checkbox = "Checkbox" + projectfile_id
+                        $("td[id=" + ProjectFileStatus + "]").html("已提交");
+                        $("input[id=" + Checkbox + "]").removeAttr("onclick").attr("onclick", "bindBtnUndoEvent(" + projectfile_id + ")")
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+        function bindBtnUndoEvent(projectfile_id) {
+            $.ajax({
+                url: "/projectfile/done/",
+                type: "POST",
+                data: {
+                    uid: projectfile_id
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        var ProjectFileStatus = "ProjectFileStatus" + projectfile_id
+                        var Checkbox = "Checkbox" + projectfile_id
+                        $("td[id=" + ProjectFileStatus + "]").html("未提交");
+                        $("input[id=" + Checkbox + "]").removeAttr("onclick").attr("onclick", "bindBtnDoneEvent(" + projectfile_id + ")")
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+
+        function bindBtnUploadEvent(projectfile_id, file_name) {
+            $('#upload').modal('toggle');
+            $('#file_name').text(file_name);
+            $('#file_id').attr("value", projectfile_id);
+        }
+
+
+    </script>
+{% endblock %}

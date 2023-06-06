@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block head %}
+    <title>机房巡检</title>
+{% endblock %}
+{% block content %}
+    <div style='text-align: center;'><h2>华数传媒技术运维部机房巡检</h2></div>
+
+    <div class="container">
+        <div class="general admin" style="display:none;">
+            <div style="margin-bottom:20px">
+                <a class="btn btn-warning btn-lg btn-block" href="/inspect/QRcode/">
+                    <span class="glyphicon glyphicon-qrcode" aria-hidden="true"></span>
+                    开始巡检
+                </a>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                巡检列表
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>巡检人员</th>
+                    <th>巡检设备</th>
+                    <th>巡检位置</th>
+                    <th>巡检时间</th>
+                    <th class="admin" style="display: none">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for inspect in inspects %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ inspect.user }}</td>
+                        <td>{{ inspect.equip }} </td>
+                        <td>{{ inspect.location }} </td>
+                        <td>{{ inspect.date }} </td>
+                        <td class="admin" style="display: none">
+                            <a class="btn btn-danger btn-xs" href="/inspect/{{ inspect.id }}/delete/">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+
+{% endblock %}
+

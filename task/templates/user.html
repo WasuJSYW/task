@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+{% block head %}
+    <title>用户管理</title>
+{% endblock %}
+{% block content %}
+    <div>
+        <div class="container">
+            <div style="margin-bottom:10px">
+                <a class="btn btn-primary" href="../user/add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    添加用户
+                </a>
+            </div>
+            <div>
+                <div class="panel panel-default">
+                    <!-- Default panel contents -->
+                    <div class="panel-heading">
+                        <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                        用户列表
+                    </div>
+
+                    <!-- Table -->
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>姓名</th>
+                            <th>密码</th>
+                            <th>角色</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tr>
+                        {% for user in user_list %}
+                            <tr>
+                                <td>{{ forloop.counter }} </td>
+                                <td>{{ user.user_name }} </td>
+                                <td>******</td>
+                                <td>{{ user.get_user_level_display }} </td>
+                                <td>
+                                    <a class="btn btn-primary btn-xs" href="../user/{{ user.id }}/reset/">
+                                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                    </a>
+                                    <a class="btn btn-danger btn-xs" href="../user/{{ user.id }}/delete/">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="pagination">
+                    {{ page_string }}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
