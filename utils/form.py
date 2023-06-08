@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from utils.encrypt import md5
 
 
-
 class TaskModelForm(BootstrapModelForm):
     class Meta:
         model = Task
