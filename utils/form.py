@@ -1,4 +1,4 @@
-from task.models import Task, Subtask, Project, File, Project_File, User, Assets, Contract
+from task.models import Task, Subtask, Project, File, Project_File, User, Assets, Contract,Data
 from django import forms
 from utils.bootstrap import BootstrapModelForm
 from django.core.exceptions import ValidationError
@@ -42,6 +42,11 @@ class ProjectfileModelForm(BootstrapModelForm):
     class Meta:
         model = Project_File
         fields = ["deadline", "submit_time", "explain"]
+
+class DataModelForm(BootstrapModelForm):
+    class Meta:
+        model = Data
+        fields = "__all__"
 
 
 class UserModelForm(BootstrapModelForm):
@@ -134,3 +139,5 @@ class ContractModelForm(BootstrapModelForm):
     class Meta:
         model = Contract
         exclude = ["project_id", "warehouse_price"]
+
+

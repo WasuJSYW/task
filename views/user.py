@@ -1,5 +1,5 @@
 # Create your views here.
-import MySQLdb
+import pymysql
 from django.shortcuts import render, redirect
 from task.models import User
 from utils.pagination import Pagination

@@ -202,3 +202,26 @@ class User(models.Model):
         (3, "日常"),
     )
     user_level = models.SmallIntegerField(verbose_name="角色", choices=level_choices)
+
+
+class Data(models.Model):
+    department_choices = (
+        (1, "前端运行部"),
+        (2, "系统技术部"),
+        (3, "技术管理部"),
+    )
+    type_choices = (
+        (1, "技术文档"),
+        (2, "演练文档"),
+        (3, "应急预案"),
+        (4, "巡检规范"),
+        (5, "故障处理"),
+        (6, "操作手册"),
+    )
+    data_depart = models.SmallIntegerField(verbose_name="文档部门", choices=department_choices)
+    data_name = models.CharField(verbose_name="文档名称", max_length=20)
+    data_type = models.SmallIntegerField(verbose_name="文档类型", choices=type_choices)
+    data_used = models.CharField(verbose_name="所有人", max_length=20)
+    data_time = models.DateField(verbose_name="提交时间")
+    explain = models.CharField(verbose_name="备注", max_length=20, blank=True, null=True)
+

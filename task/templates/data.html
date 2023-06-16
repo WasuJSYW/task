@@ -1,0 +1,82 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block head %}
+    <title>资料管理</title>
+{% endblock %}
+{% block content %}
+    <div style='text-align: center;'><h2>华数传媒技术运维部电子资料库</h2></div>
+
+    <div class="container">
+    <div style="margin-bottom:10px">
+            <div class="general admin" style="display: none;">
+                <div style="float: right" class="col-lg-6">
+                    <form method="get">
+                        <div class="input-group">
+                            <input type="text" name="NAME" class="form-control" placeholder="按文档名称搜索">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                            </button>
+                        </span>
+                        </div><!-- /input-group -->
+                    </form>
+                </div><!-- /.col-lg-6 -->
+                <ul class="nav nav-pills">
+                    <li role="presentation" class="active">
+                        <a href="../data/add">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            添加文档
+                        </a>
+                    </li>
+                    <li role="presentation"><a href="/file">资料管理</a></li>
+                    <li role="presentation"><a href="/project/?year=0">历史文档</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                文档列表
+            </div>
+
+            <!-- Table -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>文档部门</th>
+                    <th>文档名称</th>
+                    <th>文档类型</th>
+                    <th>所有人</th>
+                    <th>提交时间</th>
+                    <th>备注</th>
+                    <th class="admin" style="display:none">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for data in datas %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ data.get_data_depart_display }}</td>
+                        <td>{{ data.data_name }}</td>
+                        <td>{{ data.get_data_type_display }} </td>
+                        <td>{{ data.data_user }} </td>
+                        <td>{{ data.data_time }} </td>
+                        <td>{{ data.explain }} </td>
+                        <td class="admin" style="display: none">
+                            <a class="btn btn-danger btn-xs" href="/inspect/{{ inspect.id }}/delete/">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+{% endblock %}

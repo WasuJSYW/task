@@ -6,13 +6,11 @@ from utils.pagination import Pagination
 from utils.form import LoginForm, ProjectModelForm, DataModelForm
 
 
-def index(request):
-    # data_dict = {}
-    data_name_list = []
-    queryset= Data.objects.all()
-    dataName = request.GET.get('data_name')
-    # if dataName:
-    return render(request,'data.html',{'data_name':dataName})
+def data_index(request):
+    queryset = Data.objects.all()
+    page_object = Pagination(request, queryset, 50)
+    return render(request, 'data.html',
+                  {'datas': page_object.page_queryset, 'page_string': page_object.html()})
 
 
 def data_add(request):
@@ -66,9 +64,4 @@ def dataFile_download(request, nid):
     return HttpResponse("文件不存在，请上传！")
 
 
-def index(request):
-    loginform = LoginForm()
-    queryset = Inspect.objects.filter()
-    page_object = Pagination(request, queryset, 50)
-    return render(request, 'data.html',
-                  {'loginform': loginform, 'inspects': page_object.page_queryset, 'page_string': page_object.html})
+

@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from views import task, project, inspect, user, account, assets
+from views import task, project, inspect, user, account, assets, data
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -71,4 +71,7 @@ urlpatterns = [
     path('contract/<int:nid>/add/', assets.contract_add),
     path('contract/<int:nid>/edit/', assets.contract_edit),
     path('contract/delete/', assets.contract_delete),
+
+    path('data/', data.data_index),
+    path('data/add/', data.data_add),
 ]
