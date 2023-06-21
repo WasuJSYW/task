@@ -8,7 +8,7 @@
     <div style='text-align: center;'><h2>华数传媒技术运维部电子资料库</h2></div>
 
     <div class="container">
-    <div style="margin-bottom:10px">
+        <div style="margin-bottom:10px">
             <div class="general admin" style="display: none;">
                 <div style="float: right" class="col-lg-6">
                     <form method="get">
@@ -62,21 +62,112 @@
                         <td>{{ data.get_data_depart_display }}</td>
                         <td>{{ data.data_name }}</td>
                         <td>{{ data.get_data_type_display }} </td>
-                        <td>{{ data.data_user }} </td>
+                        <td>{{ data.data_used }} </td>
                         <td>{{ data.data_time }} </td>
                         <td>{{ data.explain }} </td>
                         <td class="admin" style="display: none">
-                            <a class="btn btn-danger btn-xs" href="/inspect/{{ inspect.id }}/delete/">
-                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                            </a>
+                            <a class='btn btn-primary btn-xs' href='../data/{{ data.id }}/edit/'>
+                                <span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a>
+                            <a class='btn btn-danger btn-xs' type='button' onclick='bindBtnConfirmEvent( {{ data.id }},0)'>
+                                <span class='glyphicon glyphicon-trash' aria-hidden='true'></span></a>
+                            <a class='btn btn-default btn-xs' type='button' onclick='bindBtnUploadEvent({{ data.id }}, {{ data.name }})'>
+                                <span class='glyphicon glyphicon-open' aria-hidden='true'></span></a>
+                            <a class='btn btn-default btn-xs' type='button'
+                               href='/project/" + res[$i].project_file__id + "/download/'>
+                                <span class='glyphicon glyphicon-download-alt' aria-hidden='true'></span></a>
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                    <h4>确定是否删除？</h4>
+                    <div style="text-align: right">
+                        <button type="button" class="btn btn-danger" onclick="bindBtnDeleteEvent()">确认</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal fade" id="upload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">文件上传</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body">
+                        <form method="post" enctype="multipart/form-data" action="/data/upload/">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label id="data_name"></label>
+                                <input id="data_id" name="data_id" type="text" style="display:none;">
+                                <input type="file" name="avatar">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                                <button type="submit" class="btn btn-primary">提 交</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
         <ul class="pagination">
             {{ page_string }}
         </ul>
     </div>
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'js/highcharts.js' %}"></script>
+    <script src="{% static 'js/xrange.js' %}"></script>
+    <script src="{% static 'js/oldie.js' %}"></script>
+    <script src="{% static 'js/exporting.js' %}"></script>
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script type="text/javascript">
+
+        function bindBtnConfirmEvent(delete_id, delete_url) {
+            $('#confirm').modal('show');
+            DELETE_ID = delete_id;
+            URL_ID = delete_url;
+        }
+
+        function bindBtnDeleteEvent() {
+            const DELETE_URL = {0: '/data/delete/', 1: "/data/delete/"};
+            $.ajax({
+                url: DELETE_URL[URL_ID],
+                type: "GET",
+                data: {
+                    uid: DELETE_ID
+                },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        location.reload();
+                    } else {
+                        alert(res.error);
+                    }
+                }
+            })
+        }
+
+        function bindBtnUploadEvent(data_id, data_name) {
+            $('#upload').modal('toggle');
+            $('#file_name').text(data_name);
+            $('#file_id').attr("value", data_id);
+        }
+
+    </script>
+
 {% endblock %}

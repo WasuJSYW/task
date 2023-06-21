@@ -696,7 +696,8 @@
                             $row.append($("<td> </td>"));
                         }
                         if (sessionStorage.getItem('role') == "管理员") {
-                            $row.append($("<td style='width: 11%;'>" + "<a class='btn btn-primary btn-xs' href='../projectfile/" + res[$i].project_file__id + "/edit/'> <span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a>" + " " +
+                            $row.append($("<td style='width: 11%;'>" +
+                                "<a class='btn btn-primary btn-xs' href='../projectfile/" + res[$i].project_file__id + "/edit/'> <span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a>" + " " +
                                 "<a class='btn btn-danger btn-xs' type='button' onclick='bindBtnConfirmEvent(" + res[$i].project_file__id + ",0)'> <span class='glyphicon glyphicon-trash' aria-hidden='true'></span></a>" + " " +
                                 "<a class='btn btn-default btn-xs' type='button' onclick='bindBtnUploadEvent(" + res[$i].project_file__id + ",\"" + res[$i].file_name + "\")'> <span class='glyphicon glyphicon-open' aria-hidden='true'></span></a>" + " " +
                                 "<a class='btn btn-default btn-xs' type='button' href='/project/" + res[$i].project_file__id + "/download/''> <span class='glyphicon glyphicon-download-alt' aria-hidden='true'></span></a>" + "</td>"

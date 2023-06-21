@@ -219,7 +219,7 @@ class Data(models.Model):
         (6, "操作手册"),
     )
     data_depart = models.SmallIntegerField(verbose_name="文档部门", choices=department_choices)
-    data_name = models.CharField(verbose_name="文档名称", max_length=20)
+    data_name = models.CharField(verbose_name="文档名称", max_length=100)
     data_type = models.SmallIntegerField(verbose_name="文档类型", choices=type_choices)
     data_used = models.CharField(verbose_name="所有人", max_length=20)
     data_time = models.DateField(verbose_name="提交时间")

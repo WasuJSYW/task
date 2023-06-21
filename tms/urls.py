@@ -74,4 +74,7 @@ urlpatterns = [
 
     path('data/', data.data_index),
     path('data/add/', data.data_add),
+    path('data/delete/', data.data_delete),
+    path('data/<int:nid>/edit/',data.data_edit),
+    path('data/upload/',data.data_upload),
 ]
